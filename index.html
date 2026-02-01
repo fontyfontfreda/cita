@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cita?</title>
+  <style>
+    body{
+      margin:0;height:100vh;display:flex;justify-content:center;align-items:center;
+      background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+      font-family:'Segoe UI',Tahoma,sans-serif;
+    }
+    .card{
+      background:#fff;padding:2rem 2.5rem;border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.15);
+      text-align:center;width:420px;max-width:90vw;
+    }
+    .card h1{margin:0 0 1.5rem;font-size:1.6rem;color:#333;}
+    .buttons{
+      position:relative;height:90px;
+      display:flex;justify-content:center;align-items:center;
+      gap:24px;
+    }
+    button{
+      padding:.65rem 1.6rem;font-size:1rem;border:0;border-radius:999px;
+      cursor:pointer;user-select:none;
+    }
+    .yes{background:#ff4d6d;color:#fff;z-index:1;}
+    .no-slot{width:88px;height:40px;} /* reserva espai pel No */
+    .no{
+      position:absolute;
+      background:#e0e0e0;color:#333;
+      touch-action:none;
+    }
+
+    .state {
+  transition: opacity .3s ease, transform .3s ease;
+}
+
+.state-yes {
+  display: none;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.card.yes .state-question {
+  display: none;
+}
+
+.card.yes .state-yes {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.state-yes p {
+  margin-top: .5rem;
+  color: #555;
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="card" id="card">
+  <div class="state state-question" id="stateQuestion">
+    <h1>Vols tenir una cita amb mi? 💕</h1>
+
+    <div class="buttons" id="container">
+      <button class="yes" id="yesBtn">Sí</button>
+      <div class="no-slot" id="noSlot"></div>
+      <button class="no" id="noBtn" type="button">No</button>
+    </div>
+  </div>
+
+  <div class="state state-yes" id="stateYes">
+    <h1>🥰 Perfecte!</h1>
+    <p>Ja tinc ganes de veure’t ✨</p>
+  </div>
+</div>
+
+  <script>
+    const container = document.getElementById("container");
+    const card = document.getElementById("card");
+const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const noSlot = document.getElementById("noSlot");
+
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+
+    // Posició inicial del No exactament on és el slot (alineat amb el Sí + gap)
+    function setInitialPosition() {
+      const slotRect = noSlot.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      const left = slotRect.left - containerRect.left;
+      const top = (container.clientHeight - noBtn.offsetHeight) / 2;
+
+      noBtn.style.left = clamp(left, 0, container.clientWidth - noBtn.offsetWidth) + "px";
+      noBtn.style.top  = clamp(top,  0, container.clientHeight - noBtn.offsetHeight) + "px";
+    }
+
+    function moveButtonRandom() {
+      const maxX = container.clientWidth - noBtn.offsetWidth;
+      const maxY = container.clientHeight - noBtn.offsetHeight;
+
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+    }
+
+    // Fuig si el punter s'acosta
+    function fleeIfClose(e) {
+      const btnRect = noBtn.getBoundingClientRect();
+      const cx = btnRect.left + btnRect.width / 2;
+      const cy = btnRect.top + btnRect.height / 2;
+
+      const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+      const dangerRadius = 90;
+
+      if (dist < dangerRadius) moveButtonRandom();
+    }
+
+    setInitialPosition();
+    window.addEventListener("resize", setInitialPosition);
+
+    // ⚠️ IMPORTANT: No bloquegem res al container, només fem “detector d'aproximació”
+    container.addEventListener("pointermove", fleeIfClose);
+
+    // Bloqueja intents sobre el No (PC + mòbil) i fuig
+    noBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      moveButtonRandom();
+    });
+
+    noBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      moveButtonRandom();
+    });
+
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      moveButtonRandom();
+    }, { passive: false });
+
+    noBtn.addEventListener("mouseenter", moveButtonRandom);
+
+
+
+yesBtn.addEventListener("click", () => {
+  card.classList.add("yes");
+});
+
+  </script>
+
+</body>
+</html>
